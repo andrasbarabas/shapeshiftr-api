@@ -1,0 +1,8 @@
+# Docker
+.dockerignore
+
+# Ignore all files ending in .a (these are static library files)
+*.a
+
+# Ignore the testdata directory and all files within it
+testdata/

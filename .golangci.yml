@@ -1,0 +1,50 @@
+linters:
+  # Enable all linters.
+  disable-all: true
+  enable:
+    - bidichk
+    - bodyclose
+    - depguard
+    - dupl
+    - durationcheck
+    - errcheck
+    - exportloopref
+    - goconst
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - prealloc
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unused
+    - whitespace
+  tests: true
+  # default is true. Enables skipping of directories:
+  #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
+  skip-dirs-use-default: true
+  timeout: 5m
+
+# Directories to exclude from linting.
+exclude:
+  - vendor/
+
+# Specific settings for individual linters.
+linter-settings:
+  # Don't allow cyclomatic complexity above 10.
+  gocyclo:
+    min-complexity: 10
+  goconst:
+    min-len: 3 # minimum length of string constant
+    min-occurrences: 6 # minimum number of occurrences
+  gofmt:
+    simplify: true
+  # Don't allow lines longer than 100 characters.
+  whitespace:
+    max-line-length: 100

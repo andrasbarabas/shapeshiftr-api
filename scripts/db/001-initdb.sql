@@ -1,0 +1,3 @@
+DROP DATABASE IF EXISTS shapeshiftr;
+
+CREATE DATABASE shapeshiftr;

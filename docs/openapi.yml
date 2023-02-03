@@ -1,0 +1,204 @@
+openapi: 3.0.1
+
+info:
+  version: "v0.1.0"
+  title: ShapeShiftr API
+
+servers:
+  - url: "{protocol}://{host}:{port}/api/"
+    variables:
+      host:
+        default: "127.0.0.1"
+        description: Address your local server is listening on
+      port:
+        default: "8080"
+      protocol:
+        default: "http"
+        enum:
+          - "http"
+          - "https"
+
+paths:
+  /healthcheck:
+    get:
+      operationId: ping
+      responses:
+        200:
+          $ref: "#/components/responses/HealthcheckResponse"
+      summary: Endpoint for testing purposes
+      tags:
+        - Healthcheck
+  /foods/:
+    get:
+      operationId: getFoods
+      responses:
+        200:
+          $ref: "#/components/responses/FoodsResponse"
+        500:
+          $ref: "#/components/responses/ErrorResponse"
+      summary: Get all foods
+      tags:
+        - Food
+    post:
+      operationId: createFood
+      responses:
+        201:
+          $ref: "#/components/responses/FoodResponse"
+        400:
+          $ref: "#/components/responses/ErrorResponse"
+        500:
+          $ref: "#/components/responses/ErrorResponse"
+      summary: Create a food resource
+      tags:
+        - Food
+  /foods/{id}:
+    get:
+      operationId: getFood
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        200:
+          $ref: "#/components/responses/FoodResponse"
+        404:
+          $ref: "#/components/responses/ErrorResponse"
+        500:
+          $ref: "#/components/responses/ErrorResponse"
+      summary: Get a single food by food identifier
+      tags:
+        - Food
+    put:
+      operationId: updateFood
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        $ref: "#/components/requestBodies/FoodRequestBody"
+      responses:
+        200:
+          $ref: "#/components/responses/FoodResponse"
+        400:
+          $ref: "#/components/responses/ErrorResponse"
+        404:
+          $ref: "#/components/responses/ErrorResponse"
+        500:
+          $ref: "#/components/responses/ErrorResponse"
+      summary: Update an existing food identified by its identifier
+      tags:
+        - Food
+    delete:
+      operationId: deleteFood
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        204:
+          $ref: "#/components/responses/NoContentResponse"
+        404:
+          $ref: "#/components/responses/ErrorResponse"
+        500:
+          $ref: "#/components/responses/ErrorResponse"
+      summary: Delete a food by food identifier
+      tags:
+        - Food
+
+components:
+  parameters:
+    Id:
+      description: UUID identifier of the entity
+      in: path
+      name: id
+      required: true
+      schema:
+        $ref: "#/components/schemas/Id"
+
+
+  requestBodies:
+    FoodRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FoodRequest"
+      description: Request body parameter for food updating endpoint
+      required: true
+
+  responses:
+    ErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description:  A generic error response in case of client or server error
+    HealthcheckResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Healthcheck"
+      description: Response for healthcheck request
+    NoContentResponse:
+      description: The server has successfully fulfilled the request and that there is no additional content to send in the response payload body
+    FoodResponse:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FoodResponse"
+      description: A single food entity
+    FoodsResponse:
+      content:
+        application/json:
+          schema:
+            items:
+              $ref: "#/components/schemas/FoodResponse"
+            type: array
+      description: A list of food entities
+
+  schemas:
+    Error:
+      nullable: false
+      properties:
+        code:
+          example: "ERR_404002"
+          nullable: false
+          type: string
+        message:
+          example: "Food not found"
+          nullable: false
+          type: string
+      type: object
+    DateTime:
+      nullable: false
+      format: ISO 8601
+      type: string
+    Healthcheck:
+      nullable: false
+      properties:
+        status:
+          example: "OK"
+          nullable: false
+          type: string
+      type: object
+    Id:
+      description: UUID identifier of the entity
+      example: 123e4567-e89b-12d3-a456-426614174000
+      format: uuid
+      nullable: false
+      type: string
+    Symbol:
+      description: A symbol consisting of two currencies
+      example: BTCUSDT
+      nullable: false
+      type: string
+    FoodRequest:
+      nullable: false
+      properties:
+        symbol:
+          $ref: "#/components/schemas/Symbol"
+      required:
+        - symbol
+      type: object
+    FoodResponse:
+      nullable: false
+      properties:
+        createdAt:
+          $ref: "#/components/schemas/DateTime"
+        id:
+          $ref: "#/components/schemas/Id"
+        symbol:
+          $ref: "#/components/schemas/Symbol"

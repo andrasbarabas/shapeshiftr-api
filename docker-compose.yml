@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      args:
+        - APPLICATION_PORT=${APPLICATION_PORT}
+        - PROJECT_NAME=${PROJECT_NAME}
+      context: .
+      dockerfile: ./Dockerfile
+      target: ${DOCKER_COMPOSE_TARGET}
+    container_name: shapeshiftr-api
+    env_file:
+      - ./.env
+    healthcheck:
+      interval: 30s
+      retries: 10
+      start_period: 10s
+      test:
+        - CMD-SHELL
+        - curl --fail http://127.0.0.1:${APPLICATION_PORT}/api/healthcheck/ || exit 1
+      timeout: 5s
+    networks:
+      shapeshiftr: null
+    ports:
+      - "127.0.0.1:${APPLICATION_PORT}:${APPLICATION_PORT}"
+    restart: on-failure
+
+  db:
+    container_name: shapeshiftr-db
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-shapeshiftr-api}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-s3cr3t}
+      POSTGRES_PORT: ${DATABASE_PORT:-5432}
+      POSTGRES_USER: ${DATABASE_USER:-shapeshiftr-api}
+    healthcheck:
+      interval: 1m
+      retries: 3
+      start_period: 10s
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${DATABASE_USER:-shapeshiftr-api}
+      timeout: 5s
+    image: postgres:15
+    networks:
+      shapeshiftr: null
+    ports:
+      - "127.0.0.1:${DATABASE_PORT:-5432}:5432"
+    restart: on-failure
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./scripts/db:/docker-entrypoint-initdb.d/
+
+networks:
+  shapeshiftr:
+    name: shapeshiftr
+    driver: bridge
+
+volumes:
+  db-data:
+    name: shapeshiftr_db-data

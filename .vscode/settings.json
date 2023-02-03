@@ -1,0 +1,11 @@
+{
+  "editor.formatOnSave": true,
+  "go.lintFlags": [
+    "--fast"
+  ],
+  "go.lintOnSave": "workspace",
+  "go.lintTool": "golangci-lint",
+  "search.exclude": {
+    "**/vendor": true
+  }
+}

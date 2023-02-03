@@ -1,0 +1,81 @@
+name: ShapeShiftr API integration
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetch golangci-lint
+        uses: golangci/golangci-lint-action@master
+        with:
+          args: --verbose
+          version: v1.50
+    timeout-minutes: 5
+
+  lint-dockerfile:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Lint Dockerfile
+        run: docker run --rm -i hadolint/hadolint < Dockerfile
+    timeout-minutes: 5
+
+  build:
+    needs: lint-dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.19.4"
+
+      - name: Build
+        run: go build -o ${{ github.event.repository.name }} ./cmd/main.go
+
+      - name: Archive build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.repository.name }}
+          path: ${{ github.event.repository.name }}
+    timeout-minutes: 5
+
+  test:
+    needs: build
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Run tests with coverage
+        run: go test -cover ./...
+    strategy:
+      matrix:
+        go-version: [1.19.x]
+        platform: [ubuntu-latest, macOS-12, windows-latest]
+    timeout-minutes: 5
